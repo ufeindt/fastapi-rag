@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  web:
+    build: .
+    context: .
+    env_file: ".env"
+    environment:
+      - QDRANT_URL=http://qdrant:6333
+    command: fastapi run /app/main.py --reload
+    ports:
+      - 8000:8000
+    volumes:
+      - ${DATA_DIR}:/data
+      - ./src:/app
+    privileged: true
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+    privileged: true
