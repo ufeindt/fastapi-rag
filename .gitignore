@@ -14,3 +14,7 @@ wheels/
 
 data
 qdrant_data
+
+src/static/css
+
+node_modules/

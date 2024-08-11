@@ -1,17 +1,17 @@
 [project]
 name = "fastapi-rag"
 version = "0.1.0"
-description = "FastAPI/FastUI RAG for answering question about documents."
+description = "FastAPI/HTMX RAG for answering question about documents."
 authors = [
     { name = "Ulrich Feindt", email = "ufeindt@gmail.com" }
 ]
 dependencies = [
     "fastapi[standard]>=0.112.0",
-    "fastui>=0.6.0",
     "torch @ https://download.pytorch.org/whl/cpu-cxx11-abi/torch-2.4.0%2Bcpu.cxx11.abi-cp312-cp312-linux_x86_64.whl#sha256=99f701862b88f2ece4de38ce01622735d313a8794c03d21a2be1691a7ebdb3ce",
     "openai>=1.38.0",
     "qdrant-client>=1.10.1",
     "sentence-transformers>=3.0.1",
+    "jinja2>=3.1.4",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

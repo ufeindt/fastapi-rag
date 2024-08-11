@@ -1,15 +1,25 @@
 from db import qdrant_client
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, StreamingResponse
-from fastui import AnyComponent, FastUI, prebuilt_html
-from fastui.components import Heading, Markdown, ModelForm, Page
-from fastui.forms import fastui_form
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from llm import OpenAiMessage, openai_query, openai_query_async
 from pydantic import BaseModel
 from transformer import transformer
-from typing_extensions import Annotated
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+app.add_middleware(GZipMiddleware)
+
+
+@app.get("/")
+async def index(request: Request):
+    return templates.TemplateResponse("base.html", {"request": request})
 
 
 class QueryForm(BaseModel):
@@ -32,7 +42,6 @@ class QueryForm(BaseModel):
         )
         system_message = {"role": "system", "content": prompt}
         prompt_message = {"role": "user", "content": self.query}
-
         return [system_message, prompt_message]
 
     def submit_query(self, collection: str):
@@ -49,45 +58,17 @@ class QueryForm(BaseModel):
             yield chunk
 
 
-@app.get("/api/", response_model=FastUI, response_model_exclude_none=True)
-def homepage() -> list[AnyComponent]:
-    return [
-        Page(
-            components=[
-                Heading(text="FastAPI/FastUI RAG Demo", level=2),
-                ModelForm(model=QueryForm, submit_url="/api/query/dnd-5e-srd"),
-            ]
-        )
-    ]
-
-
 @app.get("/api/collections")
 async def collections():
     return {"collections": qdrant_client.get_collections()}
 
 
-@app.post("/api/query/{collection}.json")
+@app.post("/api/query/{collection}", response_class=StreamingResponse)
 async def query_json(query_form: QueryForm, collection: str) -> StreamingResponse:
     collections = [c.name for c in qdrant_client.get_collections().collections]
     if collection not in collections:
         raise HTTPException(status_code=404, detail="Collection not found")
-
     return StreamingResponse(
         query_form.submit_query_async(collection),
         media_type="text/event-stream",
     )
-
-
-@app.post(
-    "/api/query/{collection}", response_model=FastUI, response_model_exclude_none=True
-)
-async def query(
-    query_form: Annotated[QueryForm, fastui_form(QueryForm)], collection: str
-) -> list[AnyComponent]:
-    return [Markdown(text=query_form.submit_query(collection))]
-
-
-@app.get("/{path:path}")
-def root() -> HTMLResponse:
-    """Simple HTML page which serves the React app, comes last as it matches all paths."""
-    return HTMLResponse(prebuilt_html(title="FastAPI/FastUI RAG Demo"))

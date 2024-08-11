@@ -36,15 +36,12 @@ dnspython==2.6.1
     # via email-validator
 email-validator==2.2.0
     # via fastapi
-    # via pydantic
 executing==2.0.1
     # via stack-data
 fastapi==0.112.0
     # via fastapi-rag
 fastapi-cli==0.0.5
     # via fastapi
-fastui==0.6.0
-    # via fastapi-rag
 filelock==3.15.4
     # via huggingface-hub
     # via torch
@@ -88,6 +85,7 @@ jedi==0.19.1
     # via ipython
 jinja2==3.1.4
     # via fastapi
+    # via fastapi-rag
     # via torch
 joblib==1.4.2
     # via scikit-learn
@@ -132,7 +130,6 @@ pure-eval==0.2.3
     # via stack-data
 pydantic==2.8.2
     # via fastapi
-    # via fastui
     # via openai
     # via qdrant-client
 pydantic-core==2.20.1

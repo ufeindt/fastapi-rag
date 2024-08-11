@@ -1,4 +1,4 @@
-# FastAPI/FastUI RAG
+# FastAPI/HTMX RAG
 
 A web api and interface for asking questions about documents. The project uses 
 [retrieval-augmented generation (RAG)](https://en.wikipedia.org/wiki/Retrieval-augmented_generation):
@@ -21,9 +21,9 @@ This project is in large parts based on [this demo notebook](https://github.com/
 ## Current Stack
 - Embeddings model:
   [sentence-transformers/multi-qa-mpnet-base-dot-v1](https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-dot-v10)
-- Vector DB: [Qdrant](https://qdrant.tech/) (used in local mode for now)
+- Vector DB: [Qdrant](https://qdrant.tech/)
 - Web API: [FastAPI](https://fastapi.tiangolo.com/)
-- Web UI: [FastUI](https://github.com/pydantic/FastUI)
+- Web UI: [Jinja2](https://palletsprojects.com/p/jinja/) templates, [HTMX](https://htmx.org/), and [Tailwind](https://tailwindcss.com/)
 - LLM: GPT-3.5-turbo-1106 (for now because it is cheaper; requires an OpenAI API key to
   use)
 

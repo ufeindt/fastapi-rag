@@ -13,6 +13,16 @@ services:
       - ${DATA_DIR}:/data
       - ./src:/app
     privileged: true
+  tailwind:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.tailwind
+    command: npm run dev
+    tty: true
+    volumes:
+      - ./tailwindcss/styles:/tailwind/styles
+      - ./src:/app
+    privileged: true
   qdrant:
     image: qdrant/qdrant:latest
     ports:

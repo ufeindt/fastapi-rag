@@ -1,0 +1,10 @@
+FROM node:latest
+
+COPY src /app
+WORKDIR /tailwind
+COPY tailwindcss .
+
+RUN npm install
+
+RUN npm run dev
+
