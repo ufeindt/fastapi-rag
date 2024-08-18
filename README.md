@@ -28,4 +28,13 @@ This project is in large parts based on [this demo notebook](https://github.com/
   use)
 
 ## To Do 
-- Implement the UI 
+- Make the UI prettier
+- Move collection details and queries into a database (SQLite?).
+- Cache responses in the database.
+- Investigate if the embeddings can be stored in the same database as collection
+  details and queries (maybe in Postgres?).
+- Add script the create embeddings from a directory of markdown files.
+- Add script to download the DnD 5e SRD as example data.
+- Add authentication, so the app can be deployed without risking that someone
+  else the OpenAI API with the apps API key.
+- Deploy!

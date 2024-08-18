@@ -1,0 +1,6 @@
+<a hx-get="/collections" hx-push-url="true" hx-target="#content">Back</a>
+<form hx-post="/collections/{{collection}}" hx-target="#query-sse" hx-swap="innerHTML">
+  <input type="text" name="query" placeholder="Your question...">
+  <button>Submit</button>
+</form>
+<div id="query-sse"></div>

@@ -1,0 +1,10 @@
+<div 
+  hx-ext="sse" 
+  sse-connect="/query/{{query_id}}" 
+  hx-swap="beforeend"
+  sse-swap="NextChunk"
+  hx-target="#response"
+  sse-close="ResponseComplete"
+>
+  <div id="response"></div>
+</div>

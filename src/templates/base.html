@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="{{url_for('static',path='/css/app.css')}}" rel="stylesheet" />
-    <script src="{{url_for('static', path='/js/htmx.min.js')}}"></script>
+    <script src="{{url_for('static',path='/js/htmx.min.js')}}"></script>
+    <script src="{{url_for('static',path='/js/sse.min.js')}}"></script>
     <title>FastAPI/HTMX RAG</title>
   </head>
   <body>
-    <ul id="todos" hx-get="/todos" hx-swap="innerHTML" hx-trigger="load"></ul>
-    <form hx-post="/todos" hx-target="#todos" hx-swap="innerHTML" hx-on:htmx:after-request="this.reset()">
-      <input type="text" name="todo" placeholder="I'd like to...">
-      <button>Create</button>
-    </form>
+    <h1> FastAPI/HTMX Retrieval Augmented Generation (RAG)</h1>
+    <div id="content">
+      {% block content %}{% endblock %}
+    </div>
   </body>
 </html>

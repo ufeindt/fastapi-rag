@@ -3,98 +3,47 @@ from uuid import uuid4
 
 from db import qdrant_client
 from fastapi import FastAPI, Form, Header, HTTPException, Request
-from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import (
+    HTMLResponse,
+    RedirectResponse,
+    StreamingResponse,
+)
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from llm import OpenAiMessage, openai_query, openai_query_async
 from pydantic import BaseModel
 from transformer import transformer
 
+app_collections = FastAPI()
+app_query = FastAPI()
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app_collections.mount("/static", StaticFiles(directory="static"), name="static")
+app_collections.add_middleware(GZipMiddleware, minimum_size=1000)
 
-app.add_middleware(GZipMiddleware)
+app.mount("/collections", app_collections)
+app.mount("/query", app_query)
 
+collections = {
+    "dnd-5e-srd": {
+        "name": "D&D 5th Edition System Reference Document",
+    }
+}
 
-class Todo:
-    def __init__(self, text: str):
-        self.id = uuid4()
-        self.text = text
-        self.done = False
-
-
-todos = []
-
-
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse(request=request, name="base.html")
+queries = {}
 
 
-@app.get("/todos", response_class=HTMLResponse)
-async def list_todos(
-    request: Request, hx_request: Annotated[Union[str, None], Header()] = None
-):
-    if hx_request:
-        return templates.TemplateResponse(
-            request=request, name="todos.html", context={"todos": todos}
-        )
-    return JSONResponse(content=jsonable_encoder(todos))
-
-
-@app.post("/todos", response_class=HTMLResponse)
-async def create_todo(request: Request, todo: Annotated[str, Form()]):
-    todos.append(Todo(todo))
-    return templates.TemplateResponse(
-        request=request, name="todos.html", context={"todos": todos}
-    )
-
-
-@app.put("/todos/{todo_id}", response_class=HTMLResponse)
-async def update_todo(request: Request, todo_id: str, text: Annotated[str, Form()]):
-    for todo in todos:
-        if str(todo.id) == todo_id:
-            todo.text = text
-            break
-    return templates.TemplateResponse(
-        request=request, name="todos.html", context={"todos": todos}
-    )
-
-
-@app.post("/todos/{todo_id}/toggle", response_class=HTMLResponse)
-async def toggle_todo(request: Request, todo_id: str):
-    for todo in todos:
-        if str(todo.id) == todo_id:
-            todo.done = not todo.done
-            break
-    return templates.TemplateResponse(
-        request=request, name="todos.html", context={"todos": todos}
-    )
-
-
-@app.post("/todos/{todo_id}/delete", response_class=HTMLResponse)
-async def delete_todo(request: Request, todo_id: str):
-    for index, todo in enumerate(todos):
-        if str(todo.id) == todo_id:
-            del todos[index]
-            break
-    return templates.TemplateResponse(
-        request=request, name="todos.html", context={"todos": todos}
-    )
-
-
-class QueryForm(BaseModel):
+class Query(BaseModel):
     query: str
+    collection: str
 
-    def get_messages(self, collection: str) -> list[OpenAiMessage]:
+    def get_messages(self) -> list[OpenAiMessage]:
         query_embeddings = transformer.encode(self.query).tolist()
         results = qdrant_client.search(
-            collection_name=collection,
+            collection_name=self.collection,
             query_vector=query_embeddings,
             limit=20,
             with_payload=True,
@@ -110,31 +59,82 @@ class QueryForm(BaseModel):
         prompt_message = {"role": "user", "content": self.query}
         return [system_message, prompt_message]
 
-    def submit_query(self, collection: str):
+    def submit_query(self):
         return openai_query(
             model="gpt-3.5-turbo-1106",
-            messages=self.get_messages(collection),
+            messages=self.get_messages(),
         )
 
-    async def submit_query_async(self, collection: str):
+    async def submit_query_async(self):
         async for chunk in openai_query_async(
             model="gpt-3.5-turbo-1106",
-            messages=self.get_messages(collection),
+            messages=self.get_messages(),
         ):
-            yield chunk
+            # for chunk in self.query.split(" "):
+            yield f"event: NextChunk\ndata: {chunk}\n\n"
+            # await sleep(0.1)
+
+        yield "event: ResponseComplete\ndata: End\n\n"
 
 
-@app.get("/api/collections")
-async def collections():
-    return {"collections": qdrant_client.get_collections()}
+@app_collections.get("/", response_class=HTMLResponse)
+async def get_collections(
+    request: Request, hx_request: Annotated[Union[str, None], Header()] = None
+):
+    if hx_request:
+        return templates.TemplateResponse(
+            request=request,
+            name="collections_block.html",
+            context={"collections": collections},
+        )
+
+    return templates.TemplateResponse(
+        request=request, name="collections.html", context={"collections": collections}
+    )
 
 
-@app.post("/api/query/{collection}", response_class=StreamingResponse)
-async def query_json(query_form: QueryForm, collection: str) -> StreamingResponse:
-    collections = [c.name for c in qdrant_client.get_collections().collections]
+@app_collections.get("/{collection}", response_class=HTMLResponse)
+async def get_collection(
+    request: Request,
+    collection: str,
+    hx_request: Annotated[Union[str, None], Header()] = None,
+):
+    if hx_request:
+        return templates.TemplateResponse(
+            request=request,
+            name="collection_block.html",
+            context={"collection": collection},
+        )
+    return templates.TemplateResponse(
+        request=request, name="collection.html", context={"collection": collection}
+    )
+
+
+@app_collections.post("/{collection}", response_class=HTMLResponse)
+async def post_collection(
+    request: Request, collection: str, query: Annotated[str, Form()]
+):
     if collection not in collections:
         raise HTTPException(status_code=404, detail="Collection not found")
+
+    query_id = str(uuid4())
+    queries[query_id] = Query(query=query, collection=collection)
+    return templates.TemplateResponse(
+        request=request, name="query_sse.html", context={"query_id": query_id}
+    )
+
+
+@app_query.get("/{query_id}", response_class=StreamingResponse)
+async def get_query(request: Request, query_id: str):
+    if query_id not in queries:
+        raise HTTPException(status_code=404, detail="Query not found")
+
     return StreamingResponse(
-        query_form.submit_query_async(collection),
+        queries[query_id].submit_query_async(),
         media_type="text/event-stream",
     )
+
+
+@app.get("/", response_class=HTMLResponse)
+async def get_index(request: Request):
+    return RedirectResponse("/collections")
