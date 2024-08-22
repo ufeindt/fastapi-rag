@@ -28,7 +28,6 @@ This project is in large parts based on [this demo notebook](https://github.com/
   use)
 
 ## To Do 
-- Make the UI prettier
 - Move collection details and queries into a database (SQLite?).
 - Cache responses in the database.
 - Investigate if the embeddings can be stored in the same database as collection
