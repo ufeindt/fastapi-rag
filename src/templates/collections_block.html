@@ -3,7 +3,7 @@
 <div class="p-2 flex flex-wrap justify-center gap-2">
   {% for collection in collections %}
   <div
-    class="bg-slate-50 border-4 border-slate-200 rounded-xl p-3 w-5/12 hover:shadow-md hover:shadow-slate-400 cursor-pointer"
+    class="bg-slate-50 dark:bg-slate-700 border-4 border-slate-200 dark:border-slate-600 rounded-xl p-3 w-5/12 hover:shadow-md hover:shadow-slate-400 cursor-pointer"
     hx-get="/collections/{{collection.slug}}"
     hx-push-url="true"
     hx-target="#content"> 
