@@ -10,9 +10,13 @@
     <title>FastAPI/HTMX RAG</title>
   </head>
   <body>
-    <h1> FastAPI/HTMX Retrieval Augmented Generation (RAG)</h1>
-    <div id="content">
-      {% block content %}{% endblock %}
+    <div class="p-6 mx-auto max-w-screen-lg">
+      <h1 class ="text-3xl font-bold mx-auto w-fit">
+        FastAPI/HTMX Retrieval Augmented Generation (RAG)
+      </h1>
+      <div id="content" class="p-4 w-full">
+        {% block content %}{% endblock %}
+      </div>
     </div>
   </body>
 </html>

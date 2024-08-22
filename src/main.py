@@ -29,7 +29,12 @@ app.mount("/query", app_query)
 
 collections = {
     "dnd-5e-srd": {
-        "name": "D&D 5th Edition System Reference Document",
+        "slug": "dnd-5e-srd",
+        "name": "D&D 5e SRD",
+        "description": (
+            "The basic rules for the 5th edition of Dungeons\xa0&\xa0Dragons from "
+            "its System Reference Document (SRD)."
+        ),
     }
 }
 
@@ -85,40 +90,47 @@ async def get_collections(
         return templates.TemplateResponse(
             request=request,
             name="collections_block.html",
-            context={"collections": collections},
+            context={"collections": collections.values()},
         )
 
     return templates.TemplateResponse(
-        request=request, name="collections.html", context={"collections": collections}
+        request=request,
+        name="collections.html",
+        context={"collections": collections.values()},
     )
 
 
-@app_collections.get("/{collection}", response_class=HTMLResponse)
+@app_collections.get("/{collection_name}", response_class=HTMLResponse)
 async def get_collection(
     request: Request,
-    collection: str,
+    collection_name: str,
     hx_request: Annotated[Union[str, None], Header()] = None,
 ):
+    if collection_name not in collections:
+        raise HTTPException(status_code=404, detail="Collection not found")
+
     if hx_request:
         return templates.TemplateResponse(
             request=request,
             name="collection_block.html",
-            context={"collection": collection},
+            context={"collection": collections[collection_name]},
         )
     return templates.TemplateResponse(
-        request=request, name="collection.html", context={"collection": collection}
+        request=request,
+        name="collection.html",
+        context={"collection": collections[collection_name]},
     )
 
 
-@app_collections.post("/{collection}", response_class=HTMLResponse)
+@app_collections.post("/{collection_name}", response_class=HTMLResponse)
 async def post_collection(
-    request: Request, collection: str, query: Annotated[str, Form()]
+    request: Request, collection_name: str, query: Annotated[str, Form()]
 ):
-    if collection not in collections:
+    if collection_name not in collections:
         raise HTTPException(status_code=404, detail="Collection not found")
 
     query_id = str(uuid4())
-    queries[query_id] = Query(query=query, collection=collection)
+    queries[query_id] = Query(query=query, collection=collection_name)
     return templates.TemplateResponse(
         request=request, name="query_sse.html", context={"query_id": query_id}
     )
