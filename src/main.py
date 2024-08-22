@@ -86,17 +86,22 @@ class Query(BaseModel):
 async def get_collections(
     request: Request, hx_request: Annotated[Union[str, None], Header()] = None
 ):
+    context = {
+        "collections": collections.values(),
+    }
+
     if hx_request:
         return templates.TemplateResponse(
             request=request,
-            name="collections_block.html",
-            context={"collections": collections.values()},
+            name="collections.html",
+            context=context,
         )
 
+    context["content_template"] = "collections.html"
     return templates.TemplateResponse(
         request=request,
-        name="collections.html",
-        context={"collections": collections.values()},
+        name="base.html",
+        context=context,
     )
 
 
@@ -109,16 +114,22 @@ async def get_collection(
     if collection_name not in collections:
         raise HTTPException(status_code=404, detail="Collection not found")
 
+    context = {
+        "collection": collections[collection_name],
+    }
+
     if hx_request:
         return templates.TemplateResponse(
             request=request,
-            name="collection_block.html",
-            context={"collection": collections[collection_name]},
+            name="collection.html",
+            context=context,
         )
+
+    context["content_template"] = "collection.html"
     return templates.TemplateResponse(
         request=request,
-        name="collection.html",
-        context={"collection": collections[collection_name]},
+        name="base.html",
+        context=context,
     )
 
 
