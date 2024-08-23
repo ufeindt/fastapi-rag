@@ -168,8 +168,9 @@ tqdm==4.66.4
     # via transformers
 transformers==4.43.3
     # via sentence-transformers
-typer==0.12.3
+typer==0.12.4
     # via fastapi-cli
+    # via fastapi-rag
 typing-extensions==4.12.2
     # via fastapi
     # via huggingface-hub

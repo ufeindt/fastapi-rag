@@ -5,12 +5,13 @@ services:
     context: .
     env_file: ".env"
     environment:
+      - DATA_DIR=/data
       - QDRANT_URL=http://qdrant:6333
     command: fastapi run /app/main.py --reload
     ports:
       - 8000:8000
     volumes:
-      - ${DATA_DIR}:/data
+      - ./data:/data
       - ./src:/app
     privileged: true
   tailwind:
