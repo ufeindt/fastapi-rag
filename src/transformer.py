@@ -1,3 +1,5 @@
 from sentence_transformers import SentenceTransformer
 
-transformer = SentenceTransformer("sentence-transformers/multi-qa-mpnet-base-dot-v1")
+TRANSFORMER_MODEL = "sentence-transformers/multi-qa-mpnet-base-dot-v1"
+
+transformer = SentenceTransformer(TRANSFORMER_MODEL)

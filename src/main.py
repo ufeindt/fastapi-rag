@@ -75,9 +75,7 @@ class Query(BaseModel):
             model="gpt-3.5-turbo-1106",
             messages=self.get_messages(),
         ):
-            # for chunk in self.query.split(" "):
             yield f"event: NextChunk\ndata: {chunk}\n\n"
-            # await sleep(0.1)
 
         yield "event: ResponseComplete\ndata: End\n\n"
 
