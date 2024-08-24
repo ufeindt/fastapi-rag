@@ -27,13 +27,26 @@ This project is in large parts based on [this demo notebook](https://github.com/
 - LLM: GPT-3.5-turbo-1106 (for now because it is cheaper; requires an OpenAI API key to
   use)
 
+## Usage
+- Clone the repository
+- Create a .env file with your OpenAI API key as `OPENAI_API_KEY`.
+- To start the dev environment, run `podman-compose up -d`. (Docker Compose should also work.)
+- Run the following commands to download the example data and create the embeddings.
+```shell
+podman-compose exec web python download_example_data.py
+podman-compose exec web python create_embeddings.py
+podman-compose exec web python update_embeddings_db.py
+```
+- Visit http://localhost:8000 in your browser and try out the app.
+
+### Creating the embeddings with CUDA
+If you have a GPU and want to use it for the embeddings, you can run `create_embeddings.py` outside of the podman container with the `--cuda` flag. You need to install the regular version of `torch` for this (the container uses the CPU-only version). (Note that this option is currently still untested.)
+
 ## To Do 
 - Move collection details and queries into a database (SQLite?).
 - Cache responses in the database.
 - Investigate if the embeddings can be stored in the same database as collection
   details and queries (maybe in Postgres?).
-- Add script the create embeddings from a directory of markdown files.
-- Add script to download the DnD 5e SRD as example data.
 - Add authentication, so the app can be deployed without risking that someone
   else the OpenAI API with the apps API key.
 - Deploy!

@@ -7,9 +7,8 @@ from typing import Generator, Tuple
 import typer
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
+from transformer import TRANSFORMER_MODEL
 from typing_extensions import Annotated
-
-TRANSFORMER_MODEL = "sentence-transformers/multi-qa-mpnet-base-dot-v1"
 
 app = typer.Typer()
 
